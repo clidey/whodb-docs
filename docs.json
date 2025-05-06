@@ -1,0 +1,152 @@
+{
+  "name": "Documentation",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Introduction & Overview",
+            "pages": [
+              "Documentation/Introduction_&_Overview/Project_Overview",
+              "Documentation/Introduction_&_Overview/Quick_Start",
+              "Documentation/Introduction_&_Overview/Demo_and_Examples"
+            ]
+          },
+          {
+            "group": "Architecture",
+            "pages": [
+              "Documentation/Architecture/Architecture_Overview",
+              "Documentation/Architecture/Backend_Architecture",
+              "Documentation/Architecture/Frontend_Architecture",
+              "Documentation/Architecture/GraphQL_Schema_and_Resolvers"
+            ]
+          },
+          {
+            "group": "Setup & Deployment",
+            "pages": [
+              "Documentation/Setup_&_Deployment/Frontend_Setup",
+              "Documentation/Setup_&_Deployment/Backend_Setup",
+              "Documentation/Setup_&_Deployment/Docker_Deployment"
+            ]
+          },
+          {
+            "group": "User Guides",
+            "pages": [
+              "Documentation/User_Guides/Authentication_&_Profiles",
+              "Documentation/User_Guides/Settings_Management",
+              "Documentation/User_Guides/AI_Chat_Interface",
+              "Documentation/User_Guides/Raw_SQL_Execution",
+              "Documentation/User_Guides/Storage_Unit_Exploration",
+              "Documentation/User_Guides/Contact_Us"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "GraphQL API",
+            "pages": [
+              "API_Reference/GraphQL_API/Schema_Definitions",
+              "API_Reference/GraphQL_API/GraphQL_Resolvers",
+              "API_Reference/GraphQL_API/Frontend_Apollo_Client_Hooks"
+            ]
+          },
+          {
+            "group": "Backend Plugin System",
+            "pages": [
+              "API_Reference/Backend_Plugin_System/Engine_Core",
+              "API_Reference/Backend_Plugin_System/Common_Plugin_Utilities",
+              "API_Reference/Backend_Plugin_System/GORM_Base_Plugin",
+              "API_Reference/Backend_Plugin_System/MySQL_Plugin",
+              "API_Reference/Backend_Plugin_System/Postgres_Plugin",
+              "API_Reference/Backend_Plugin_System/SQLite3_Plugin",
+              "API_Reference/Backend_Plugin_System/MongoDB_Plugin",
+              "API_Reference/Backend_Plugin_System/Redis_Plugin",
+              "API_Reference/Backend_Plugin_System/Elasticsearch_Plugin",
+              "API_Reference/Backend_Plugin_System/ClickHouse_Plugin"
+            ]
+          },
+          {
+            "group": "Backend Authentication",
+            "pages": [
+              "API_Reference/Backend_Authentication/Authentication_Middleware",
+              "API_Reference/Backend_Authentication/Login_Logic",
+              "API_Reference/Backend_Authentication/Logout_Logic"
+            ]
+          },
+          {
+            "group": "Frontend State Management",
+            "pages": [
+              "API_Reference/Frontend_State_Management/Redux_Store_Configuration",
+              "API_Reference/Frontend_State_Management/Authentication_State",
+              "API_Reference/Frontend_State_Management/Common_State",
+              "API_Reference/Frontend_State_Management/Database_State",
+              "API_Reference/Frontend_State_Management/Global_State",
+              "API_Reference/Frontend_State_Management/Settings_State",
+              "API_Reference/Frontend_State_Management/Chat_State",
+              "API_Reference/Frontend_State_Management/Typed_React_Redux_Hooks",
+              "API_Reference/Frontend_State_Management/Notification_Helper"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Frontend UI Components",
+        "groups": [
+          {
+            "group": "Core UI Components",
+            "pages": [
+              "Frontend_UI_Components/Core_UI_Components/Buttons",
+              "Frontend_UI_Components/Core_UI_Components/Inputs",
+              "Frontend_UI_Components/Core_UI_Components/Dropdowns",
+              "Frontend_UI_Components/Core_UI_Components/Cards",
+              "Frontend_UI_Components/Core_UI_Components/Tables",
+              "Frontend_UI_Components/Core_UI_Components/Loading_Indicators",
+              "Frontend_UI_Components/Core_UI_Components/Notifications",
+              "Frontend_UI_Components/Core_UI_Components/Common_UI"
+            ]
+          },
+          {
+            "group": "Advanced UI Components & Utilities",
+            "pages": [
+              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Code_Editor",
+              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Graph_Components",
+              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Search_Input",
+              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Sidebar_Navigation",
+              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Custom_React_Hooks",
+              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Utility_Functions"
+            ]
+          },
+          {
+            "group": "Frontend Pages",
+            "pages": [
+              "Frontend_UI_Components/Frontend_Pages/Login_Page",
+              "Frontend_UI_Components/Frontend_Pages/Logout_Page",
+              "Frontend_UI_Components/Frontend_Pages/Chat_Page",
+              "Frontend_UI_Components/Frontend_Pages/Default_Chat_Route",
+              "Frontend_UI_Components/Frontend_Pages/Storage_Unit_Exploration_Page",
+              "Frontend_UI_Components/Frontend_Pages/Storage_Unit_Management",
+              "Frontend_UI_Components/Frontend_Pages/Raw_Execute_Page",
+              "Frontend_UI_Components/Frontend_Pages/Settings_Page",
+              "Frontend_UI_Components/Frontend_Pages/Contact_Us_Page",
+              "Frontend_UI_Components/Frontend_Pages/Graph_Visualization_Page"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "logo": {
+    "light": "/logo/logo.png",
+    "dark": "/logo/logo.png"
+  }
+}

@@ -1,0 +1,157 @@
+# Redis Plugin
+
+The **Redis Plugin** integrates Redis data stores into the Whodb database engine framework, providing a standardized interface for querying, inspecting, and interacting with Redis databases. This plugin bridges the gap between Redis's key-value data paradigm and Whodb's generalized plugin architecture, enabling users to access Redis keys as storage units and retrieve associated data with filtering and pagination support.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Core Features](#core-features)
+- [Usage Example](#usage-example)
+- [Plugin API](#plugin-api)
+- [Integration Details](#integration-details)
+- [Architecture Diagram](#architecture-diagram)
+- [Related Files](#related-files)
+
+---
+
+## Overview
+
+Redis is an in-memory key-value store popular for its performance and simplicity. The Redis Plugin abstracts Redis concepts into the Whodb engine `PluginFunctions` interface, mapping Redis databases and keys into the platform's generalized terminology:
+
+- **Databases:** Redis databases configured on the server (e.g., default DB 0, 1, etc.)
+- **Storage Units:** Redis keys within a selected database
+- **Rows:** Data structures and their content associated with keys, interpretable for queries
+
+The plugin provides mechanisms for availability checks, metadata retrieval, row-level data access, and supports the common relational concepts needed by Whodb's higher layers.
+
+
+## Core Features
+
+- **Availability Checking:** Verifies connectivity to the Redis server using ping operations.
+- **Databases Enumeration:** Lists available Redis databases.
+- **Storage Units Discovery:** Retrieves Redis keys in a specified database as storage units.
+- **Row Retrieval:** Supports fetching the content of Redis keys, with optional filtering based on `WhereCondition` models, and pagination via page size and offset.
+- **Graph Abstraction:** Currently unimplemented since Redis lacks conventional relational graphs.
+- **Raw Execution:** Not supported due to Redis command set differences.
+- **Chat:** Not supported in this plugin.
+
+## Usage Example
+
+```go
+import (
+  "context"
+  "fmt"
+
+  "github.com/clidey/whodb/core/engine"
+  "github.com/clidey/whodb/core/plugins/redis"
+)
+
+func ExampleRedisUsage() {
+  // Create a plugin instance
+  redisPlugin := redis.NewRedisPlugin()
+
+  // Configure access (use your own credentials and connection info)
+  creds := &engine.Credentials{
+    Hostname: "localhost",
+    Port:     "6379",
+    Username: "",    // Optional
+    Password: "",    // Optional
+    Database: "0",   // Redis DB index
+  }
+
+  // Prepare plugin configuration
+  pluginConfig := engine.NewPluginConfig(creds)
+
+  // Check availability
+  if !redisPlugin.IsAvailable(pluginConfig) {
+    fmt.Println("Redis is not available")
+    return
+  }
+
+  // Get databases
+  dbs, err := redisPlugin.GetDatabases(pluginConfig)
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println("Databases:", dbs)
+
+  // Get storage units (keys) in default db
+  units, err := redisPlugin.GetStorageUnits(pluginConfig, "0")
+  if err != nil {
+    panic(err)
+  }
+  for _, unit := range units {
+    fmt.Println("Key:", unit.Name)
+  }
+
+  // Fetch rows of a specific key (storage unit)
+  rowsResult, err := redisPlugin.GetRows(pluginConfig, "0", "myKey", nil, 10, 0)
+  if err != nil {
+    panic(err)
+  }
+  fmt.Println("Rows:", rowsResult.Rows)
+}
+```
+
+## Plugin API
+
+The RedisPlugin implements the following methods of the `engine.PluginFunctions` interface:
+
+| Method                  | Description                                                      |Notes                           |
+|-------------------------|------------------------------------------------------------------|-------------------------------|
+| `IsAvailable`           | Checks if Redis connection is active via PING command            | Uses `redis.Client.Ping`       |
+| `GetDatabases`          | Lists configured Redis databases                                 | Reflects Redis DB instance indexes |
+| `GetAllSchemas`         | Not supported, returns empty result                              | Redis does not expose schemas   |
+| `GetStorageUnits`       | Lists keys within a selected Redis database                      | Keys treat as storage units    |
+| `GetRows`               | Retrieves key values, supports basic filtering with `WhereCondition` | Implements simple filtering logic |
+| `GetGraph`              | Not supported, returns not implemented error                     | Redis is not relational         |
+| `RawExecute`            | Not supported, returns not implemented error                     | Raw SQL doesn't apply to Redis |
+| `Chat`                  | Not implemented                                                  |                               |
+
+### Filtering Support
+
+- The plugin attempts to convert `WhereCondition` filters to Redis-specific conditions.
+- It evaluates filters on hash fields or list members locally during retrieval.
+
+
+## Integration Details
+
+The Redis Plugin is one of many backend database plugins integrated into the Whodb engine:
+
+- Registered and initialized with the engine during startup.
+- Selected dynamically based on database type and credentials.
+- Provides uniform methods for discovery, querying, and data manipulation when interacting with Redis.
+- Interfaces with Redis client libraries (`github.com/go-redis/redis/v8`) and engine core abstractions.
+
+This plugin enables the Whodb system to support **Redis** alongside other databases like Postgres, MySQL, MongoDB, etc., offering a consistent interface despite fundamental differences in backend data models.
+
+
+## Architecture Diagram
+
+```mermaid
+flowchart TD
+  A[Whodb Engine] -->|Uses| B[Redis Plugin]
+  B --> C[Redis Server]
+  B --> D[Redis Client (go-redis)]
+  B --> E[PluginFunctions Interface]
+  A -->|Other Plugins| F[Postgres Plugin]
+  A --> G[MySQL Plugin]
+  click C "https://redis.io/" "Redis Official"
+  click B "/core/src/plugins/redis/redis.go" "View Redis Plugin Source"
+```
+
+## Related Files
+
+- Redis Plugin implementation: [`core/src/plugins/redis/redis.go`](/core/src/plugins/redis/redis.go)
+- Redis DB client setup and connection: Part of Redis plugin sources
+- Plugin interface standard: [`core/src/engine/plugin.go`](/core/src/engine/plugin.go)
+- Plugin database connection helper: [`core/src/plugins/common.go`](/core/src/plugins/common.go)
+- Engine setup with all plugins including Redis: [`core/src/src.go`](/core/src/src.go)
+
+---
+
+For full source code and further details, explore the files linked above.
+
+---

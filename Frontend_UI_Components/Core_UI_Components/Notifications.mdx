@@ -1,0 +1,132 @@
+# Notifications
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Component Structure](#component-structure)
+- [Usage Example](#usage-example)
+- [Lifecycle and Behavior](#lifecycle-and-behavior)
+- [Integration Details](#integration-details)
+- [Mermaid Diagram](#mermaid-diagram)
+
+---
+
+## Overview
+
+The **Notifications** component provides a unified, visually consistent system for displaying temporary notification messages within the application. It supports multiple concurrent notifications, distinct types (intents), animated transitions, and automatic dismissal, ensuring users receive status feedback for various actions or system events with minimal UI disruption.
+
+Notification messages can represent different visibility intents such as `error`, `success`, `warning`, or `default`, influencing their visual style.
+
+This system is built on reusable React functional components, employing global state management for centralized notification control.
+
+---
+
+## Component Structure
+
+### Notification
+Individual notification component representing a single alert message.
+
+- Receives a notification prop with the content, unique ID, and intent.
+- Employs automatic timeout to remove itself from the global notification list.
+- Supports manual dismissal.
+
+### Notifications
+Container component that renders a list of **Notification** components.
+
+- Automatically renders active notifications from the global Redux store.
+- Manages the lifecycle and dismissal timing of each notification.
+- Uses animation for entering and leaving notifications (`framer-motion`'s `AnimatePresence`).
+
+---
+
+## Usage Example
+
+```tsx
+import React from 'react';
+import { Notifications } from './Notifications';
+import { useAppDispatch } from '../store/hooks';
+import { CommonActions } from '../store/common';
+
+// Example of adding a notification
+const notifyUser = (dispatch) => {
+  dispatch(CommonActions.addNotifications({
+    id: 'unique-id-123',
+    message: 'Data saved successfully!',
+    intent: 'success',
+  }));
+};
+
+const App = () => {
+  const dispatch = useAppDispatch();
+
+  React.useEffect(() => {
+    notifyUser(dispatch);
+  }, [dispatch]);
+
+  return (
+    <div>
+      {/* Main app components go here */}
+      <Notifications />
+    </div>
+  );
+};
+
+export default App;
+```
+
+The `Notifications` component should be included at a high level in the app tree so that notifications can be shown regardless of current user navigation.
+
+---
+
+## Lifecycle and Behavior
+
+- **Addition**: Notifications are added to the global state with a unique `id`, a `message` string, and an optional `intent` describing the notification type.
+- **Display**: Each notification pops up typically in a fixed location on the screen (e.g., bottom-right corner).
+- **Recognition of intent**: Intents dictate styles (e.g., error messages in red, success in green).
+- **Timeout / Dismissal**: Notifications auto-dismiss after a preset duration or can be dismissed via a close button.
+- **Performance**: With individual notification timers, component uses React hooks for optimal performance and minimum re-renders.
+
+---
+
+## Integration Details
+
+### State Management
+- **Redux**: Notifications are managed within a global `common` slice in Redux store.
+- **Actions**:
+  - `addNotifications`: Add a new notification.
+  - `removeNotifications`: Remove notification by ID.
+
+### React Hooks
+- `useAppDispatch` and `useAppSelector` to interact with redux store.
+
+### External libs used
+- **framer-motion**: For animated appearance/disappearance effects.
+- **classnames**: For dynamic class assignment.
+
+### UI Architecture
+- Designed to be used globally in the root layout/page container.
+- Supports multiple concurrent notifications.
+- Notifications can be initiated from any UI component or service action via redux dispatch.
+
+### File Location and Source
+- Notifications component: [`frontend/src/components/notifications.tsx`](/frontend/src/components/notifications.tsx)
+- Common redux slice: [`frontend/src/store/common.ts`](/frontend/src/store/common.ts)
+
+---
+
+## Mermaid Diagram
+
+```mermaid
+flowchart TD
+  A[User/System] -->|Trigger notification| B[Dispatch addNotifications action]
+  B --> C[Update Redux notification state]
+  C --> D[Notifications container re-renders]
+  D --> E[Notification component(s) rendered]
+  E --> F{Timeout expires or user closes notification}
+  F -- Yes --> G[Dispatch removeNotifications action]
+  G --> H[Remove notification from state]
+  H --> D
+  F -- No --> E
+```
+
+---

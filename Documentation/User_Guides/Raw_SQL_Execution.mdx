@@ -1,0 +1,177 @@
+# Raw SQL Execution
+
+Manage and execute raw SQL queries interactively within the application.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [User Interface](#user-interface)
+- [Component Architecture](#component-architecture)
+- [Usage Example](#usage-example)
+- [Mermaid Diagram](#mermaid-diagram)
+- [Integration Details](#integration-details)
+- [Source Code](#source-code)
+
+---
+
+## Overview
+
+The **Raw SQL Execution** feature allows users to run arbitrary SQL queries against their connected databases directly from the frontend interface. This feature supports multiple query "cells" with independent query history and results, enabling rich and flexible database experimentation.
+
+Key capabilities include:
+
+- Multi-cell query editing with independent execution.
+- Query result display as interactive tables.
+- Support for multiple pages/tabs managing separate workspaces.
+- Query execution with feedback for success or errors.
+- History navigation for each query cell.
+
+This component waives schema restrictions and let users perform any SQL commands supported by their databases.
+
+
+## User Interface
+
+Users interact with the Raw SQL Execution page, which provides:
+
+- **Multiple Query Cells:** Each cell has its own editor instance.
+- **Execution Controls:** Buttons to run queries, add/delete cells.
+- **Result Views:** Tables representing rows returned by queries.
+- **Tab Management:** Allows multiple pages where each contains query cells.
+
+Example UI layout:
+
+| Control | Description |
+|---------|--------------|
+| Add Cell | Insert new query input cell |
+| Delete Cell | Remove query cell |
+| Run Query | Execute current cell SQL |
+| Result Table | Display rows from executed query |
+| Tab Bar | Switch between different query page tabs |
+
+## Component Architecture
+
+The main component, `RawExecutePage`, maintains:
+
+- An array of **pages**, each page has an ID and name.
+- The currently active page ID.
+- State objects mapping page IDs to their rendered content.
+- List of active query cell IDs within current page.
+
+Each **RawExecuteCell** manages:
+
+- Query input (code) state.
+- Submitted query text.
+- Rows fetched from backend query.
+- Execution loading and error states.
+- History of queries executed within this cell.
+- Display controls for query output (result preview, SQL toggle).
+
+Queries are sent to the backend GraphQL API through `useRawExecuteLazyQuery` for 
+execution and retrieve results.
+
+
+## Usage Example
+
+Below is a simplified example to show how one might use the RawExecute component to execute a query and display results.
+
+```tsx
+import React, { useState } from 'react';
+import { useRawExecuteLazyQuery } from '../generated/graphql';
+
+const RawSqlExample: React.FC = () => {
+  const [query, setQuery] = useState('SELECT * FROM users');
+  const [execute, { data, loading, error }] = useRawExecuteLazyQuery();
+
+  const runQuery = () => {
+    execute({ variables: { query } });
+  };
+
+  return (
+    <div>
+      <textarea value={query} onChange={(e) => setQuery(e.target.value)} rows={6} />
+      <button onClick={runQuery} disabled={loading}>Run</button>
+
+      {error && <div style={{ color: 'red' }}>Error: {error.message}</div>}
+      {data && (
+        <table>
+          <thead>
+            <tr>{data.RawExecute.Columns.map(c => <th key={c.Name}>{c.Name}</th>)}</tr>
+          </thead>
+          <tbody>
+            {data.RawExecute.Rows.map((row, idx) => (
+              <tr key={idx}>
+                {row.map((cell, ci) => <td key={ci}>{cell}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+export default RawSqlExample;
+```
+
+
+## Mermaid Diagram
+
+```mermaid
+flowchart TD
+  UI[User Interface]
+  SQL_Input[Query Input (Raw SQL)]
+  ExecButton[Run Query Button]
+  GraphQL_Send[Send Query via GraphQL]
+  Server[Backend Server]
+  DB[Database Engine]
+  Response[Query Result]
+  Display[Display Table Result]
+
+  UI --> SQL_Input
+  UI --> ExecButton
+  ExecButton --> GraphQL_Send
+  GraphQL_Send --> Server
+  Server --> DB
+  DB --> Server
+  Server --> Response
+  Response --> Display
+  Display --> UI
+```
+
+
+## Integration Details
+
+The Raw SQL Execution feature is a key part of the frontend application with integration points as follows:
+
+- **Frontend:**
+  - Uses Apollo GraphQL client with `useRawExecuteLazyQuery` for query execution.
+  - Employs React state and React hooks for managing UI state, pages, and cells.
+  - Displays results using custom `Table` component for tabular data.
+
+- **Backend:**
+  - GraphQL schema exposes `RawExecute` query/mutation for arbitrary SQL strings.
+  - Core engine plugins handle SQL execution safely on target databases.
+
+- **State Management:**
+  - Uses Redux and internal component state for UI and query session management.
+
+Key dependencies:
+
+- `@apollo/client` - for GraphQL request/response handling.
+- `react` - for UI components and hooks.
+- Generated GraphQL types in `frontend/src/generated/graphql.tsx`.
+
+This component serves as a powerful tool for developers and admins to perform direct database operations easily from within the app.
+
+
+## Source Code
+
+- Frontend raw execute page component: [frontend/src/pages/raw-execute/raw-execute.tsx](/frontend/src/pages/raw-execute/raw-execute.tsx)
+- Backend raw execute GraphQL resolver: [core/graph/schema.resolvers.go](/core/graph/schema.resolvers.go)
+- GraphQL schema snippet related to raw execute: [core/graph/schema.graphqls](/core/graph/schema.graphqls)
+
+---
+
+Explore and manage your database with flexibility and transparency using the Raw SQL Execution feature.

@@ -1,0 +1,222 @@
+# Custom React Hooks
+
+Custom React Hooks allow you to encapsulate reusable stateful logic that can be shared across different components. They provide a clean and elegant way to abstract behavior and side effects while enhancing code modularity and readability.
+
+---
+
+## Table of Contents
+
+- [Introduction to Custom React Hooks](#introduction-to-custom-react-hooks)
+- [Creating a Basic Custom Hook](#creating-a-basic-custom-hook)
+- [Example: useLongPress Hook](#example-uselongpress-hook)
+- [Example: useExportToCSV Hook](#example-useexporttocsv-hook)
+- [Integration Details](#integration-details)
+- [Mermaid Flow: Hook Lifecycle](#mermaid-flow-hook-lifecycle)
+- [References](#references)
+
+---
+
+## Introduction to Custom React Hooks
+
+Custom Hooks in React are JavaScript functions whose names start with `use` and that may call other Hooks. They allow you to extract component logic into reusable functions.
+
+Benefits include:
+
+- Sharing stateful behavior without changing your component hierarchy
+- Simplifying complex logic into modular, testable functions
+- Avoiding repeated code for commonly used patterns (e.g., event handlers, subscriptions, data fetching)
+
+---
+
+## Creating a Basic Custom Hook
+
+A custom hook typically follows this pattern:
+
+```ts
+import { useState, useEffect } from 'react'
+
+// Example: useWindowWidth - returns current window width
+export function useWindowWidth(): number {
+  const [width, setWidth] = useState(window.innerWidth)
+
+  useEffect(() => {
+    function handleResize() {
+      setWidth(window.innerWidth)
+    }
+
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  return width
+}
+```
+
+This hook is then used as:
+
+```tsx
+function MyComponent() {
+  const width = useWindowWidth()
+  return <div>Window Width: {width}</div>
+}
+```
+
+---
+
+## Example: useLongPress Hook
+
+This hook detects long press events on an element and provides custom handlers.
+
+```ts
+import { useState, useRef, useEffect, useCallback } from 'react'
+
+interface UseLongPressOptions {
+  onLongPress: () => void
+  onClick?: () => void
+  ms?: number
+}
+
+export function useLongPress({ onLongPress, onClick, ms = 500 }: UseLongPressOptions) {
+  const [longPressStarted, setLongPressStarted] = useState(false)
+  const timeout = useRef<NodeJS.Timeout | null>(null)
+
+  const start = useCallback(() => {
+    setLongPressStarted(true)
+    timeout.current = setTimeout(() => onLongPress(), ms)
+  }, [onLongPress, ms])
+
+  const clear = useCallback(() => {
+    if (timeout.current) {
+      clearTimeout(timeout.current)
+      timeout.current = null
+    }
+    if (longPressStarted && onClick) onClick()
+    setLongPressStarted(false)
+  }, [longPressStarted, onClick])
+
+  useEffect(() => () => clear(), [clear])
+
+  return {
+    onMouseDown: start,
+    onTouchStart: start,
+    onMouseUp: clear,
+    onMouseLeave: clear,
+    onTouchEnd: clear
+  }
+}
+```
+
+Use case in a component:
+
+```tsx
+function ButtonWithLongPress() {
+  const longPressEvents = useLongPress({
+    onLongPress: () => alert('Long press detected!'),
+    onClick: () => console.log('Clicked!')
+  })
+
+  return <button {...longPressEvents}>Press me</button>
+}
+```
+
+---
+
+## Example: useExportToCSV Hook
+
+This hook helps with exporting tabular data to CSV files.
+
+```ts
+import { useCallback } from 'react'
+
+export function useExportToCSV(
+  columns: string[],
+  rows: Record<string, string | number>[],
+  specificIndexes: number[]
+) {
+  const exportCSV = useCallback(() => {
+    const csvRows = [columns.join(",")]
+    rows.forEach(row => {
+      const vals = columns.map(col => {
+        const v = row[col]
+        return typeof v === 'string' && v.includes(',') ? `"${v}"` : v
+      })
+      csvRows.push(vals.join(","))
+    })
+
+    const csvData = new Blob([csvRows.join("\n")], { type: 'text/csv' })
+    const url = URL.createObjectURL(csvData)
+
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'export.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [columns, rows])
+
+  return exportCSV
+}
+```
+
+Usage:
+
+```tsx
+const columns = ['id', 'name', 'email']
+const rows = [
+  { id: 1, name: 'Alice', email: 'alice@example.com' },
+  { id: 2, name: 'Bob', email: 'bob@example.com' },
+]
+
+function ExportButton() {
+  const exportCSV = useExportToCSV(columns, rows, [])
+  return <button onClick={exportCSV}>Export CSV</button>
+}
+```
+
+---
+
+## Integration Details
+
+These custom hooks are integrated within the frontend React application to provide reusable, composable stateful logic. Typically, these hooks are placed in a `components/hooks.tsx` file or similar, and exported for use across UI components.
+
+### Dependencies
+
+- React's core APIs (`useState`, `useEffect`, `useRef`, `useCallback`)
+- Browser APIs such as `Blob`, `URL`, and `document`
+
+### System Touchpoints
+
+- **User input handling:** `useLongPress` can be attached to UI elements requiring distinct long-press interactions.
+- **Data export:** `useExportToCSV` is used in pages/components displaying tables or lists of data for export functionality.
+
+### Responsibilities
+
+- Encapsulate complex or repetitive event handling
+- Enable consistent user interaction patterns
+- Provide convenient utilities without polluting component logic
+
+---
+
+## Mermaid Flow: Hook Lifecycle
+
+```mermaid
+flowchart TD
+  A[Component Mount] --> B{Use Custom Hook?}
+  B -- Yes --> C[Initialize State with useState]
+  C --> D[Setup Listeners or Effects (useEffect)]
+  D --> E[Return event handlers or utility functions]
+  B -- No --> F[Regular Component Behavior]
+  E --> G[Component Renders]
+  G --> H[User interacts (e.g., long press)]
+  H --> I[Hook Logic executes]
+  I --> G
+  G --> J[Component Unmount]
+  J --> K[Cleanup resources (useEffect cleanup)]
+```
+
+---
+
+## References
+
+- [hooks.tsx source file](frontend/src/components/hooks.tsx)
+- React Hooks Documentation: https://reactjs.org/docs/hooks-custom.html
+
