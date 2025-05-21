@@ -1,0 +1,221 @@
+---
+title: Settings Management
+description: "Settings Management"
+---
+# Settings Management
+
+Settings management in WhoDB provides a centralized way to control application-wide configuration flags, primarily focusing on enabling or disabling telemetry and performance metrics collection. This feature allows users to opt in or out of metrics reporting, ensuring transparency and control over data usage.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Settings Data Model](#settings-data-model)
+- [Using Settings in the Backend](#using-settings-in-the-backend)
+- [Frontend Integration](#frontend-integration)
+- [Enabling Metrics Collection](#enabling-metrics-collection)
+- [Settings Mutation Example](#settings-mutation-example)
+- [State Management](#state-management)
+- [Architecture and Flow](#architecture-and-flow)
+
+---
+
+## Overview
+
+The settings management subsystem provides a simple boolean configuration known as `MetricsEnabled` which toggles the collection and reporting of operational metrics. It is designed to be extensible, allowing for future settings to be added. The current setting primarily exists to facilitate user consent regarding telemetry.
+
+The system consists of:
+
+- A backend settings model and update mechanism
+- A GraphQL API for querying and updating settings
+- A frontend UI to toggle metrics collection
+- Redux state management to synchronize user preferences
+
+---
+
+## Settings Data Model
+
+The core data model in the backend is a `Settings` struct containing the `MetricsEnabled` boolean field.
+
+```go
+// Settings defines application-level configuration
+// MetricsEnabled allows enabling or disabling telemetry
+// in the application.
+type Settings struct {
+  MetricsEnabled bool `json:"metricsEnabled"`
+}
+```
+
+The settings layer exposes methods to get the current settings and to update them using defined fields.
+
+---
+
+## Using Settings in the Backend
+
+Settings are accessed and modified via the `settings` package:
+
+- `Get()` retrieves the current settings
+- `UpdateSettings(fields ...ISettingsField) string` updates the settings based on fields provided
+
+The `MetricsEnabledField` type implements the `ISettingsField` interface enabling updates to the `MetricsEnabled` setting.
+
+Example of updating metrics setting within backend code:
+
+```go
+field := MetricsEnabledField(true)
+result := settings.UpdateSettings(&field)
+if result != "ok" {
+  // Handle error
+}
+```
+
+More details in the backend implementation: [core/src/settings/settings.go](/core/src/settings/settings.go)
+
+---
+
+## Frontend Integration
+
+Settings management integrates with the frontend React application providing:
+
+- A dedicated `SettingsPage` component where users can enable or disable metrics collection.
+- It uses React hooks `useAppSelector` and `useAppDispatch` to interact with the Redux settings state slice.
+- GraphQL mutation hook `useUpdateSettingsMutation` to sync changes back to the server.
+
+Example simplified React snippet for the settings toggle:
+
+```tsx
+import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useUpdateSettingsMutation } from "../generated/graphql";
+import { SettingsActions } from "../store/settings";
+
+const SettingsToggle = () => {
+  const dispatch = useAppDispatch();
+  const metricsEnabled = useAppSelector(state => state.settings.metricsEnabled);
+  const [updateSettings] = useUpdateSettingsMutation();
+
+  const onToggle = (enabled: boolean) => {
+    dispatch(SettingsActions.setMetricsEnabled(enabled));
+    updateSettings({ variables: { newSettings: { MetricsEnabled: String(enabled) } } });
+  };
+
+  return (
+    <input type="checkbox" checked={metricsEnabled} onChange={e => onToggle(e.target.checked)} />
+  );
+};
+```
+
+Further implementation details: [frontend/src/pages/settings/settings.tsx](/frontend/src/pages/settings/settings.tsx)
+
+---
+
+## Enabling Metrics Collection
+
+When the user toggles the metrics enabled setting:
+
+1. The frontend updates the Redux state.
+2. A GraphQL mutation sends the updated setting to the backend.
+3. The backend persists the change.
+4. The application respects the current setting by enabling/disabling telemetry reporting.
+
+The metrics setting can be used across the system to conditionally send performance or usage data.
+
+---
+
+## Settings Mutation Example
+
+GraphQL mutation to update the `MetricsEnabled` setting:
+
+```graphql
+mutation UpdateSettings($newSettings: SettingsConfigInput!) {
+  UpdateSettings(newSettings: $newSettings) {
+    Status
+  }
+}
+```
+
+Variables:
+
+```json
+{
+  "newSettings": {
+    "MetricsEnabled": "true"
+  }
+}
+```
+
+---
+
+## State Management
+
+The application uses Redux Toolkit to maintain a `settings` slice:
+
+- Initial state holds `metricsEnabled` boolean.
+- Actions include `setMetricsEnabled` for toggling.
+- Reducers update state accordingly.
+
+```ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface ISettingsState {
+  metricsEnabled: boolean;
+}
+
+const initialState: ISettingsState = {
+  metricsEnabled: true,
+};
+
+const settingsSlice = createSlice({
+  name: 'settings',
+  initialState,
+  reducers: {
+    setMetricsEnabled(state, action: PayloadAction<boolean>) {
+      state.metricsEnabled = action.payload;
+    },
+  },
+});
+
+export const SettingsActions = settingsSlice.actions;
+export const settingsReducers = settingsSlice.reducer;
+```
+
+More details in: [frontend/src/store/settings.ts](/frontend/src/store/settings.ts)
+
+---
+
+## Architecture and Flow
+
+```mermaid
+flowchart TD
+  A[User accesses SettingsPage] --> B{Toggles Metrics Enabled}
+  B -- Yes --> C[Dispatch setMetricsEnabled(true)]
+  B -- No --> D[Dispatch setMetricsEnabled(false)]
+  C --> E[GraphQL UpdateSettings Mutation]
+  D --> E
+  E --> F[Backend updates persisted settings]
+  F --> G[Settings reported across app]
+  G --> H[Telemetry enabled or disabled based on setting]
+```
+
+
+---
+
+## Integration Details
+
+- **Backend:** Implements settings as simple structs with GraphQL API to expose and mutate.
+- **Frontend:** Connects to backend via Apollo Client GraphQL queries and mutations.
+- **State:** Redux holds the authoritative frontend copy of the settings, ensuring reactive UI updates.
+- **UI:** Provides user control to opt in/out of metrics with immediate sync and persistence.
+
+This integration ensures ease of toggling configuration, centralizes settings logic, and encourages responsible data usage.
+
+
+---
+
+## Important Files
+
+- Backend Settings Logic: [core/src/settings/settings.go](/core/src/settings/settings.go)
+- Frontend Settings Page: [frontend/src/pages/settings/settings.tsx](/frontend/src/pages/settings/settings.tsx)
+- Redux Settings Slice: [frontend/src/store/settings.ts](/frontend/src/store/settings.ts)
+- GraphQL Resolvers for Settings: [core/graph/schema.resolvers.go](/core/graph/schema.resolvers.go)
+

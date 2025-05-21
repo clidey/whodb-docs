@@ -1,0 +1,141 @@
+---
+title: Typed React Redux Hooks
+description: "Typed React Redux Hooks"
+---
+# Typed React Redux Hooks
+
+Typed React Redux Hooks provide type-safe versions of the standard `useDispatch` and `useSelector` hooks tailored to the application’s Redux store. These hooks enhance developer experience by enabling proper type inference, reducing runtime errors, and improving editor IntelliSense within React components.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Setup & Usage](#setup--usage)
+- [Example](#example)
+- [Integration Details](#integration-details)
+- [Architecture Context](#architecture-context)
+
+---
+
+## Overview
+
+React-Redux's `useDispatch` and `useSelector` hooks provide access to the Redux store's dispatch function and the current state, respectively. However, they operate without knowledge of your store's state shape or specific action types. This can lead to weak typing and less ergonomic developer experience.
+
+Typed React Redux hooks offer strongly typed alternatives that reflect your store's state and dispatch types. This is usually done by creating custom hooks via TypeScript’s generics and React-Redux’s `TypedUseSelectorHook`, improving:
+
+- **Type Safety:** Ensures dispatched actions and selected state are checked at compile time.
+- **Developer Experience:** Rich autocomplete and type checking.
+- **Maintainability:** Reduces bugs related to type mismatches.
+
+In this project, these hooks are defined to wrap the store's types, providing standard React-Redux hooks tailored to the specific Redux store.
+
+---
+
+## Setup & Usage
+
+Assuming you have a configured Redux store with `RootState` and `AppDispatch` types exported, you create typed versions of the hooks as follows:
+
+```ts
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from './store';
+
+// Use throughout your app instead of plain `useDispatch` and `useSelector`
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+### Explanation:
+- `useAppDispatch` is a typed dispatch that returns the store's dispatch with explicit types.
+- `useAppSelector` is a typed selector function with the `RootState` type, providing state shape context.
+
+---
+
+## Example
+
+Here's a minimal example demonstrating usage of these hooks inside a React component:
+
+```tsx
+import React from 'react';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { increment, decrement } from '../store/counterSlice';
+
+const CounterComponent = () => {
+  // Get typed dispatch
+  const dispatch = useAppDispatch();
+
+  // Select a slice of state with type safety
+  const count = useAppSelector((state) => state.counter.value);
+
+  return (
+    <div>
+      <h1>Count: {count}</h1>
+      <button onClick={() => dispatch(increment())}>Increment</button>
+      <button onClick={() => dispatch(decrement())}>Decrement</button>
+    </div>
+  );
+};
+
+export default CounterComponent;
+```
+
+This ensures the `count` variable is correctly typed and any calls to `dispatch` enforce compliance with available action types.
+
+---
+
+## Integration Details
+
+### Role in the Frontend Architecture
+
+- **Centralized Typing:** The typed hooks encapsulate Redux store typing in one place, preventing repetitive and error-prone manual typings in components.
+- **Simplified Imports:** Components import `useAppDispatch` and `useAppSelector` instead of `react-redux` hooks, conserving consistent usage.
+- **Type Consistency:** Updates to the store's types (e.g., reducers or actions) propagate correctly through typed hooks without further changes in components.
+
+### Dependencies
+
+- **`redux` & `react-redux`:** Core store and bindings.
+- **`@reduxjs/toolkit`:** For slice creation and type inference (store types are usually declared in the store config using RTK).
+- **Local Store Types (`RootState` & `AppDispatch`):** Derived from your store setup, typically via `ReturnType<typeof store.getState>` and `typeof store.dispatch`.
+
+### System Interaction
+
+1. The store defines the global state shape (`RootState`) and dispatch type (`AppDispatch`).
+2. Typed hooks consume these types to define `useAppSelector` and `useAppDispatch`.
+3. React components use these typed hooks to dispatch actions and access state with type safety.
+4. The use of typed hooks leads to safer, maintainable, and predictable UI logic.
+
+---
+
+## Architecture Context
+
+```mermaid
+flowchart TD
+  A[Redux Store Setup] -->|Defines types| B(RootState, AppDispatch)
+  B --> C[Typed Hooks Definition]
+  C --> D[useAppDispatch() - Typed Dispatch]
+  C --> E[useAppSelector() - Typed Selector]
+  D & E --> F[React Components]
+  F -->|Dispatch actions & Read state| G[Redux Store]
+  G -->|State updates| F
+```
+
+This flow illustrates:
+- How the Redux store defines global types
+- How the typed hooks encapsulate these types
+- How React components utilize typed hooks
+- The dispatch and selector usage operating with full type safety
+
+---
+
+## Further Links
+
+- [Redux Store Configuration](/frontend/src/store/index.ts)
+- [Authentication State Slice](/frontend/src/store/auth.ts)
+- [Settings State Slice](/frontend/src/store/settings.ts)
+- [Global State Slice](/frontend/src/store/global.ts)
+- [Chat State Slice](/frontend/src/store/chat.ts)
+- [React-Redux Documentation](https://react-redux.js.org/using-react-redux/usage-with-typescript)
+
+---
+
+By leveraging typed React Redux hooks, the application improves both developer productivity and runtime reliability, making state management more reliable in this React-based frontend architecture.

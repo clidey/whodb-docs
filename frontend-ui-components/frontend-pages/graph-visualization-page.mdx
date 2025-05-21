@@ -1,0 +1,217 @@
+---
+title: Graph Visualization
+description: ""
+---
+# Graph Visualization Page
+
+This page provides a comprehensive interactive visualization of the database schema structure using a graph representation. It enables users to explore storage units (such as tables or collections) and their relationships visually, assisting in understanding complex database schemas.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Usage Example](#usage-example)
+- [Component Architecture](#component-architecture)
+- [Integration Details](#integration-details)
+- [Mermaid Diagram: Data Flow](#mermaid-diagram-data-flow)
+- [Related Source Files](#related-source-files)
+
+---
+
+## Overview
+
+The Graph Visualization Page fetches graph data of the current database schema via GraphQL and renders it using the ReactFlow library. This visualization includes nodes representing storage units and edges representing relationships like foreign keys.
+
+This page helps users gain insights into the structure and relationships of their data in an intuitive graphical interface.
+
+---
+
+## Features
+
+- **Dynamic Graph Rendering:** Reactively display nodes and edges as per the current schema.
+- **Auto Layout:** Utilizes Dagre layout to automatically position nodes in a readable manner.
+- **Node Expansion:** Clickable nodes to view detailed metadata.
+- **Edge Customization:** Custom edges with clear connection lines and markers.
+- **Export:** Ability to export the graph as an image.
+- **Responsive:** Handles loading and empty states gracefully.
+
+---
+
+## Usage Example
+
+```tsx
+import React, { useState, useCallback, useMemo, useRef } from 'react';
+import { ReactFlowProvider, useNodesState, useEdgesState, ReactFlow, Node, Edge } from 'reactflow';
+import { useQuery } from '@apollo/client';
+import { GetGraphDocument } from './generated/graphql';
+import GraphUtils from './components/graph/utils';
+import { StorageUnitGraphCard } from './components/graph/graph';
+
+const GraphPage: React.FC = () => {
+  // State for nodes and edges managed by reactflow hooks
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+
+  // Reference to ReactFlow instance
+  const reactFlowRef = useRef(null);
+
+  // Query to fetch graph data
+  const { data, loading } = useQuery(GetGraphDocument, {
+    variables: { schema: 'public' }, // replace with actual schema
+  });
+
+  // Initialize nodes and edges when data changes
+  React.useEffect(() => {
+    if (data?.Graph) {
+      const graphNodes = data.Graph.map(unit => ({
+        id: unit.Unit.Name,
+        type: 'storageUnit',
+        data: { unit },
+        position: { x: 0, y: 0 },
+      }));
+
+      // Edges can be constructed from relations
+      const graphEdges: Edge[] = [];
+      data.Graph.forEach(unit => {
+        unit.Relations.forEach(rel => {
+          graphEdges.push({
+            id: `${unit.Unit.Name}-${rel.Name}`,
+            source: unit.Unit.Name,
+            target: rel.Name,
+            type: 'default',
+          });
+        });
+      });
+
+      setNodes(graphNodes);
+      setEdges(graphEdges);
+    }
+  }, [data, setNodes, setEdges]);
+
+  // Layout the graph when ready
+  const onReady = useCallback(() => {
+    if (reactFlowRef.current) {
+      reactFlowRef.current.fitView();
+      // Call custom layout function if implemented
+    }
+  }, []);
+
+  // NodeTypes for custom node rendering
+  const nodeTypes = useMemo(
+    () => ({
+      storageUnit: StorageUnitGraphCard,
+    }),
+    []
+  );
+
+  if (loading) return <div>Loading graph&hellip;</div>;
+  if (!data?.Graph || data.Graph.length === 0) return <div>No graph data available.</div>;
+
+  return (
+    <div style={{ height: '100vh', width: '100%' }}>
+      <ReactFlowProvider>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          nodeTypes={nodeTypes}
+          onInit={instance => (reactFlowRef.current = instance)}
+          onLoad={onReady}
+          fitView
+        />
+      </ReactFlowProvider>
+    </div>
+  );
+};
+
+export default GraphPage;
+```
+
+---
+
+## Component Architecture
+
+The Graph Visualization Page is composed primarily of the following architectural elements:
+
+- **GraphPage Component:** This is the main React component that uses Apollo Client's `useQuery` to fetch graph data from the backend. It maintains graph node and edge states using ReactFlow's specialized hooks.
+
+- **ReactFlow:** A powerful React library for building node-based diagrams. It handles interaction, panning, zooming, and renders nodes and edges.
+
+- **Node Types:** Custom node component (`StorageUnitGraphCard`) allows richly formatted nodes showing metadata on each storage unit.
+
+- **Layout System:** Uses the Dagre layout algorithm (through a custom helper in `src/components/graph/layouts.ts`) to automatically position nodes with minimal overlap and optimal readability.
+
+- **Graph Data:** Nodes represent storage units such as tables or collections, and edges represent relationships, e.g., foreign keys or references.
+
+- **State and Effects:** React hooks manage the dynamic loading and update of graph data, and provide responsive UI feedback.
+
+---
+
+## Integration Details
+
+This page integrates deeply with both frontend and backend components:
+
+- **GraphQL Backend:** The page queries the `/api/graphql` backend service using the `GetGraph` query, which requests the graph structure for a given database schema. This ensures up-to-date schema visualization.
+
+- **Data Models:** The graph data is structured according to the GraphQL schema defined in `core/graph/schema.graphqls` and resolved by `core/graph/schema.resolvers.go`.
+
+- **Storage Units and Relations:** Each basic node corresponds to a storage unit (table or collection) returned by the backend plugin engine's inspection of the connected database.
+
+- **React Flow Ecosystem:** The component leverages reactflow's event API to manage node and edge states, user interactions, and automatic view fitting.
+
+- **Custom Components:** Nodes use specialized cards (`StorageUnitGraphCard`) that integrate with the general storage unit UI system (`frontend/src/pages/storage-unit/`), allowing shortcuts to navigate to detailed storage unit views.
+
+- **Layout & Export:** The page uses `frontend/src/components/graph/layouts.ts` for the Dagre graph layout, and can export the visual as an image with `html-to-image` integration.
+
+
+---
+
+## Mermaid Diagram: Data Flow
+
+```mermaid
+flowchart TD
+  A[User Interface] --> B[GraphPage React Component]
+  B --> C[GraphQL GetGraph Query]
+  C ==>> D[Backend GraphQL Resolvers]
+  D --> E[Database Engine Plugins]
+  E --> F[Database Schemas & Relationships]
+  F --> D
+  D --> C
+  C --> B
+  B --> G[ReactFlow Renderer]
+  G --> A
+```
+
+This diagram shows the primary interaction layers where the frontend component requests graph data, which is resolved by backend components querying underlying databases, with results rendered to the user through ReactFlow.
+
+---
+
+## Related Source Files
+
+- GraphQL Schema & Resolvers
+  - [core/graph/schema.graphqls](core/graph/schema.graphqls)
+  - [core/graph/schema.resolvers.go](core/graph/schema.resolvers.go)
+  - [core/graph/http.resolvers.go](core/graph/http.resolvers.go)
+
+- Frontend Graph Components
+  - [frontend/src/pages/graph/graph.tsx](frontend/src/pages/graph/graph.tsx)
+  - [frontend/src/components/graph/graph.tsx](frontend/src/components/graph/graph.tsx)
+  - [frontend/src/components/graph/utils.ts](frontend/src/components/graph/utils.ts)
+  - [frontend/src/components/graph/layouts.ts](frontend/src/components/graph/layouts.ts)
+  - [frontend/src/components/graph/edge.tsx](frontend/src/components/graph/edge.tsx)
+
+- Backend Engine & Plugins
+  - [core/src/engine/engine.go](core/src/engine/engine.go)
+  - [core/src/plugins/postgres/graph.go](core/src/plugins/postgres/graph.go)
+  - [core/src/plugins/mysql/graph.go](core/src/plugins/mysql/graph.go)
+  - [core/src/plugins/sqlite3/graph.go](core/src/plugins/sqlite3/graph.go)
+  - [core/src/plugins/mongodb/graph.go](core/src/plugins/mongodb/graph.go)
+  - [core/src/plugins/elasticsearch/graph.go](core/src/plugins/elasticsearch/graph.go)
+  - [core/src/plugins/clickhouse/graph.go](core/src/plugins/clickhouse/graph.go)
+
+---
+
+This comprehensive setup forms a powerful and extensible foundation for rendering interactive database schema graphs, enhancing the user's ability to comprehend and manage complex data models.

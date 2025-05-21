@@ -1,0 +1,157 @@
+---
+title: Raw Execute
+description: "Raw Execute"
+---
+# Raw Execute Page
+
+The **Raw Execute Page** in WhoDB provides a flexible and powerful interface for users to write, execute, and manage raw SQL queries directly against supported databases via the backend GraphQL API. It supports multi-cell query management, query execution history, and multiple tabbed workspaces to improve query workflow and exploration.
+
+---
+
+## Table of Contents
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Usage Guide](#usage-guide)
+  - [Query Cells](#query-cells)
+  - [Managing Multiple Pages](#managing-multiple-pages)
+  - [Executing Queries](#executing-queries)
+- [Code Example](#code-example)
+- [Architecture & Integration](#architecture--integration)
+- [Mermaid Diagram](#mermaid-diagram)
+
+---
+
+## Overview
+
+This page enables advanced users, developers, and DBAs to run arbitrary SQL statements without relying on the GUI-driven exploration UI. It exposes a free-form, multi-cell query editor interface where each cell corresponds to a query or command, complete with independent execution and output. Users can create multiple pages (tabs) to organize different sessions or projects.
+
+All queries are sent to the backend via a GraphQL mutation that forwards the raw SQL statement to the corresponding database plugin.
+
+
+## Key Features
+
+- **Multi-Cell Query Editor**: Compose multiple discrete queries or commands, each in their own editable and runnable cell.
+- **Query Result Display**: View returned rows or execution status below each query cell.
+- **Execution History**: Track past executions per cell for easy reference and repeatability.
+- **Multiple Pages**: Manage several named query pages (tabs) concurrently.
+- **Code Editor Enhancements**: Syntax highlighting, toggleable preview, and support for SQL, Markdown, and JSON content.
+- **Copy and Share**: Easily copy query code or results to clipboard.
+
+
+## Usage Guide
+
+### Query Cells
+Each cell consists of an editable code area and an output/result pane:
+
+- Write your SQL or commands in the editor.
+- Use keyboard shortcuts (like `Ctrl+Enter`) to run the current cell.
+- Toggle between editor and preview modes for better visualization.
+- Review results displayed below after execution.
+- Manage history by expanding/collapsing it.
+
+### Managing Multiple Pages
+- Add or remove query pages to organize work.
+- Rename tabs to reflect function or task.
+- Switch between pages to quickly access different queries.
+
+### Executing Queries
+Queries are sent via GraphQL `RawExecute` mutation. The backend delegates these queries to the appropriate database plugin, which returns rows or error details.
+
+- Error messages and feedback are displayed inline.
+- Results can be copied or inspected directly.
+
+
+## Code Example
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import { useRawExecuteLazyQuery } from '../generated/graphql';
+import { CodeEditor } from '../components/editor';
+import { Button } from '../components/button';
+
+const RawExecuteCell: React.FC<{ cellId: string }> = ({ cellId }) => {
+  const [code, setCode] = useState('SELECT * FROM my_table;');
+  const [submittedCode, setSubmittedCode] = useState('');
+  const [rawExecute, { data, loading, error }] = useRawExecuteLazyQuery();
+
+  const handleRun = useCallback(() => {
+    setSubmittedCode(code);
+    rawExecute({ variables: { query: code } });
+  }, [code, rawExecute]);
+
+  return (
+    <div>
+      <CodeEditor
+        value={code}
+        setValue={setCode}
+        language="sql"
+        onRun={handleRun}
+      />
+      <Button onClick={handleRun} disabled={loading}>Run</Button>
+      {error && <div className="text-red-600">Error: {error.message}</div>}
+      {data && <pre>{JSON.stringify(data.RawExecute.rows, null, 2)}</pre>}
+    </div>
+  );
+};
+
+export default RawExecuteCell;
+```
+**Note:** This is a simplified illustration of a single query cell logic, showcasing the integration with the `useRawExecuteLazyQuery` GraphQL hook and CodeEditor component.
+
+
+## Architecture & Integration
+
+- **Frontend**:
+  - Utilizes React functional components to construct the interactive query cells and page management UI.
+  - Uses Apollo Client's `useRawExecuteLazyQuery` hook for executing raw queries via GraphQL.
+  - CodeEditor component (based on CodeMirror 6) provides syntax highlighting, language support, and preview features.
+  - React state and hooks manage cell content, query submission, outputs, multiple cells, and pages.
+
+- **Backend**:
+  - Receives raw SQL queries via `RawExecute` GraphQL mutation.
+  - Resolves queries by selecting the appropriate database plugin configured according to current user credentials and database type.
+  - Plugin executes the SQL directly on the connected database and returns formatted results.
+
+- **GraphQL**:
+  - The RawExecute mutation is defined in `core/graph/schema.graphqls` and implemented in resolvers.
+  - The frontend's generated GraphQL hooks (`useRawExecuteLazyQuery`) are autogenerated from the schema.
+
+- **Dependencies**:
+  - [frontend/src/components/editor.tsx](frontend/src/components/editor.tsx): CodeEditor with multi-language support and preview
+  - [frontend/src/generated/graphql.tsx](frontend/src/generated/graphql.tsx): Apollo query hooks including `useRawExecuteLazyQuery`
+  - [core/graph/schema.graphqls](core/graph/schema.graphqls): GraphQL schema defining RawExecute
+  - [core/src/graph/schema.resolvers.go](core/graph/schema.resolvers.go): Backend GraphQL execution of raw queries
+
+
+## Mermaid Diagram
+
+Visualizing Raw Execute Page Interaction Flow:
+
+```mermaid
+flowchart TD
+  A[User opens Raw Execute Page] --> B[Multiple Query Pages/Tabs]
+  B --> C[Edit SQL Code in One or Multiple Cells]
+  C --> D{Run Query (via Button/Shortcut)}
+  D -- Yes --> E[Send RawExecute GraphQL Mutation]
+  E --> F[Backend Chooses Database Plugin]
+  F --> G[Plugin Executes Raw SQL Query]
+  G --> H[Return Query Result or Error]
+  H --> I[Display Result/Error below Cell]
+  I --> C
+  D -- No --> C
+  B --> J[Add/Delete/Rename Pages]
+```
+
+---
+
+### See Also
+- [Code Editor component](frontend/src/components/editor.tsx)
+- [GraphQL RawExecute mutation](core/graph/schema.graphqls)
+- [Raw Execute React Page implementation](frontend/src/pages/raw-execute/raw-execute.tsx)
+- [UseRawExecuteLazyQuery hook](frontend/src/generated/graphql.tsx)
+- [Backend RawExecute resolver](core/graph/schema.resolvers.go)
+
+---
+
+This page empowers users to interact deeply with database backends, enabling rapid prototyping, testing, and data manipulation beyond typical filter and grid UI approaches.
+

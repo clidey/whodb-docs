@@ -1,0 +1,175 @@
+---
+title: MongoDB Plugin
+description: "MongoDB Plugin"
+---
+# MongoDB Plugin
+
+The **MongoDB Plugin** enables integration between the WhoDB application and MongoDB databases. It implements the generic plugin interface to provide capability for schema discovery, collection metadata retrieval, query execution, and chat support within MongoDB's document-based architecture.
+
+---
+
+## Table of Contents
+
+- [Overview](#overview)
+- [Features](#features)
+- [Key Types and Concepts](#key-types-and-concepts)
+- [Example Usage](#example-usage)
+- [Integration Details](#integration-details)
+- [Architecture and Flow](#architecture-and-flow)
+- [Source Code](#source-code)
+
+---
+
+## Overview
+
+MongoDB is a popular NoSQL document database which stores data in flexible, JSON-like documents instead of relational tables. This plugin adapts MongoDB features and operations to the WhoDB plugin interface to allow unified querying, schema inspection, graph representation, and AI chat functionality.
+
+The plugin handles:
+
+- **Connection Handling:** Establishes and validates MongoDB connections using plugin configuration.
+- **Schema Discovery:** Retrieves database names and collections within those databases.
+- **Storage Units:** Maps MongoDB collections as storage units.
+- **Data Retrieval:** Executes filtered and paginated queries over collections.
+- **Graph Extraction:** Analyzes MongoDB indexes and keys to infer graph relationships.
+- **Raw Execution:** Supports raw MongoDB queries.
+- **Chat:** Supports AI-powered chat interactions leveraging database content.
+
+
+## Features
+
+- **Availability Check:** Verifies database connectivity and basic responsiveness.
+- **Databases Listing:** Lists all available database names.
+- **Collections Retrieval:** Retrieves collections for a given database.
+- **Filtered Query Support:** Applies filters mapped from generic where conditions to MongoDB queries.
+- **Pagination:** Supports skip and limit for row result pagination.
+- **Graph Generation:** Constructs storage unit graphs from indexes and relationships.
+- **Raw MongoDB Query Execution:** Runs arbitrary raw queries on MongoDB.
+- **Chat Support:** Leverages AI models to generate conversational responses based on MongoDB data.
+
+
+## Key Types and Concepts
+
+- **PluginConfig:** Encapsulates connection information and credentials.
+- **StorageUnit:** Represents a MongoDB collection with attributes.
+- **GraphUnit & GraphUnitRelationship:** Represent collections and their relationships (e.g., refs between collections).
+- **WhereCondition:** Logical filter conditions converted into MongoDB query filters.
+
+
+## Example Usage
+
+```go
+import (
+  "context"
+  "github.com/clidey/whodb/core/src/engine"
+  "github.com/clidey/whodb/core/src/plugins/mongodb"
+)
+
+func example() error {
+  // Initialize the MongoDB plugin
+  mongoPlugin := mongodb.NewMongoDBPlugin()
+
+  // Create plugin config with appropriate credentials
+  config := engine.NewPluginConfig(&engine.Credentials{
+    Type: "MongoDB",
+    Hostname: "localhost",
+    Username: "username",
+    Password: "password",
+    Database: "testdb",
+    Port: "27017",
+  })
+
+  // Check if the MongoDB instance is available
+  if !mongoPlugin.IsAvailable(config) {
+    return errors.New("MongoDB database not available")
+  }
+
+  // Get the list of databases
+  dbs, err := mongoPlugin.GetDatabases(config)
+  if err != nil {
+    return err
+  }
+  fmt.Println("Databases:", dbs)
+
+  // Get collections (storage units) in a database
+  collections, err := mongoPlugin.GetStorageUnits(config, "testdb")
+  if err != nil {
+    return err
+  }
+  for _, coll := range collections {
+    fmt.Println("Collection:", coll.Name)
+  }
+
+  // Construct a filter (WHERE condition translated for MongoDB)
+  var filter *model.WhereCondition // build as needed
+
+  // Query collection data with pagination
+  rows, err := mongoPlugin.GetRows(config, "testdb", "users", filter, 50, 0)
+  if err != nil {
+    return err
+  }
+  // rows contains the query result data
+
+  return nil
+}
+```
+
+
+## Integration Details
+
+The MongoDB plugin integrates with WhoDB's core architecture as one of the multi-database plugins that the **Engine** manages. It fits into the system where it:
+
+- Registers itself during engine initialization within `src.InitializeEngine()`.
+- Receives connection and credential information via `engine.PluginConfig` objects.
+- Translates generic query and filter concepts to MongoDB-specific operations.
+- Interfaces with the MongoDB Go driver (`go.mongodb.org/mongo-driver/mongo`) for database connectivity and operations.
+- Supports storage unit (collection) discovery and inspection for schema introspection APIs.
+- Provides graph data by analyzing MongoDB collection and index relationships.
+- Supports AI chat integration by connecting LLM-based chat requests to MongoDB data.
+
+### Dependencies
+
+- `go.mongodb.org/mongo-driver/mongo` — The official MongoDB Go driver used to manage connections, run queries and commands.
+- `github.com/clidey/whodb/core/src/engine` — Defines plugin interfaces, plugin config, records, data structures, and provides support utilities.
+- `github.com/clidey/whodb/core/graph/model` — GraphQL schema generated types for queries, mutations, and types used in where conditions.
+
+
+## Architecture and Flow
+
+```mermaid
+flowchart TD
+  A[Engine Initialization] --> B[MongoDB Plugin Registration]
+  B --> C[Receive PluginConfig]
+  C --> D{Check Availability}
+  D -- Yes --> E[List Databases]
+  D -- No --> F[Return error: DB unavailable]
+  E --> G[Get Storage Units]
+  G --> H[Build Graph of Collections and Relations]
+  G --> I[Get Rows with Filters & Pagination]
+  I --> J[Return RowsResult]
+  H --> K[Return GraphUnits]
+  C --> L[Execute Raw MongoDB Queries]
+  C --> M[Perform AI Chat Operations]
+  
+  style A stroke:#0b47a1,stroke-width:2px
+  style B stroke:#0366d6,stroke-width:2px
+  style C stroke:#0b47a1,stroke-width:2px
+  style D stroke:#e69500,stroke-width:2px
+  style E fill:#d1ecf1,stroke:#0b47a1
+  style G fill:#d1ecf1,stroke:#0b47a1
+  style I fill:#daf7dc,stroke:#047857
+  style H fill:#daf7dc,stroke:#047857
+  style L fill:#f3e6ff,stroke:#7d3cff
+  style M fill:#f3e6ff,stroke:#7d3cff
+```
+
+
+## Source Code
+
+- [MongoDB Plugin Implementation](https://github.com/clidey/whodb/blob/main/core/src/plugins/mongodb/mongodb.go)
+- [MongoDB Database Connection](https://github.com/clidey/whodb/blob/main/core/src/plugins/mongodb/db.go)
+- [MongoDB Storage Unit Graph](https://github.com/clidey/whodb/blob/main/core/src/plugins/mongodb/graph.go)
+
+
+---
+
+This plugin ensures WhoDB can be extended to handle NoSQL querying, analysis, and AI interaction with MongoDB data in a seamless and integrated fashion.

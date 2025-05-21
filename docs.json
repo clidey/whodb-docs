@@ -14,37 +14,37 @@
           {
             "group": "Introduction & Overview",
             "pages": [
-              "Documentation/Introduction_&_Overview/Project_Overview",
-              "Documentation/Introduction_&_Overview/Quick_Start",
-              "Documentation/Introduction_&_Overview/Demo_and_Examples"
+              "documentation/introduction-and-overview/project-overview",
+              "documentation/introduction-and-overview/quick-start",
+              "documentation/introduction-and-overview/demo-and-examples"
             ]
           },
           {
             "group": "Architecture",
             "pages": [
-              "Documentation/Architecture/Architecture_Overview",
-              "Documentation/Architecture/Backend_Architecture",
-              "Documentation/Architecture/Frontend_Architecture",
-              "Documentation/Architecture/GraphQL_Schema_and_Resolvers"
+              "documentation/architecture/architecture-overview",
+              "documentation/architecture/backend-architecture",
+              "documentation/architecture/frontend-architecture",
+              "documentation/architecture/graphql-schema-and-resolvers"
             ]
           },
           {
             "group": "Setup & Deployment",
             "pages": [
-              "Documentation/Setup_&_Deployment/Frontend_Setup",
-              "Documentation/Setup_&_Deployment/Backend_Setup",
-              "Documentation/Setup_&_Deployment/Docker_Deployment"
+              "documentation/setup-and-deployment/frontend-setup",
+              "documentation/setup-and-deployment/backend-setup",
+              "documentation/setup-and-deployment/docker-deployment"
             ]
           },
           {
             "group": "User Guides",
             "pages": [
-              "Documentation/User_Guides/Authentication_&_Profiles",
-              "Documentation/User_Guides/Settings_Management",
-              "Documentation/User_Guides/AI_Chat_Interface",
-              "Documentation/User_Guides/Raw_SQL_Execution",
-              "Documentation/User_Guides/Storage_Unit_Exploration",
-              "Documentation/User_Guides/Contact_Us"
+              "documentation/user-guides/authentication-and-profiles",
+              "documentation/user-guides/settings-management",
+              "documentation/user-guides/ai-chat-interface",
+              "documentation/user-guides/raw-sql-execution",
+              "documentation/user-guides/storage-unit-exploration",
+              "documentation/user-guides/contact-us"
             ]
           }
         ]
@@ -55,46 +55,46 @@
           {
             "group": "GraphQL API",
             "pages": [
-              "API_Reference/GraphQL_API/Schema_Definitions",
-              "API_Reference/GraphQL_API/GraphQL_Resolvers",
-              "API_Reference/GraphQL_API/Frontend_Apollo_Client_Hooks"
+              "api-reference/graphql-api/schema-definitions",
+              "api-reference/graphql-api/graphql-resolvers",
+              "api-reference/graphql-api/frontend-apollo-client-hooks"
             ]
           },
           {
             "group": "Backend Plugin System",
             "pages": [
-              "API_Reference/Backend_Plugin_System/Engine_Core",
-              "API_Reference/Backend_Plugin_System/Common_Plugin_Utilities",
-              "API_Reference/Backend_Plugin_System/GORM_Base_Plugin",
-              "API_Reference/Backend_Plugin_System/MySQL_Plugin",
-              "API_Reference/Backend_Plugin_System/Postgres_Plugin",
-              "API_Reference/Backend_Plugin_System/SQLite3_Plugin",
-              "API_Reference/Backend_Plugin_System/MongoDB_Plugin",
-              "API_Reference/Backend_Plugin_System/Redis_Plugin",
-              "API_Reference/Backend_Plugin_System/Elasticsearch_Plugin",
-              "API_Reference/Backend_Plugin_System/ClickHouse_Plugin"
+              "api-reference/backend-plugin-system/engine-core",
+              "api-reference/backend-plugin-system/common-plugin-utilities",
+              "api-reference/backend-plugin-system/gorm-base-plugin",
+              "api-reference/backend-plugin-system/mysql-plugin",
+              "api-reference/backend-plugin-system/postgres-plugin",
+              "api-reference/backend-plugin-system/sqlite3-plugin",
+              "api-reference/backend-plugin-system/mongodb-plugin",
+              "api-reference/backend-plugin-system/redis-plugin",
+              "api-reference/backend-plugin-system/elasticsearch-plugin",
+              "api-reference/backend-plugin-system/clickhouse-plugin"
             ]
           },
           {
             "group": "Backend Authentication",
             "pages": [
-              "API_Reference/Backend_Authentication/Authentication_Middleware",
-              "API_Reference/Backend_Authentication/Login_Logic",
-              "API_Reference/Backend_Authentication/Logout_Logic"
+              "api-reference/backend-authentication/authentication-middleware",
+              "api-reference/backend-authentication/login-logic",
+              "api-reference/backend-authentication/logout-logic"
             ]
           },
           {
             "group": "Frontend State Management",
             "pages": [
-              "API_Reference/Frontend_State_Management/Redux_Store_Configuration",
-              "API_Reference/Frontend_State_Management/Authentication_State",
-              "API_Reference/Frontend_State_Management/Common_State",
-              "API_Reference/Frontend_State_Management/Database_State",
-              "API_Reference/Frontend_State_Management/Global_State",
-              "API_Reference/Frontend_State_Management/Settings_State",
-              "API_Reference/Frontend_State_Management/Chat_State",
-              "API_Reference/Frontend_State_Management/Typed_React_Redux_Hooks",
-              "API_Reference/Frontend_State_Management/Notification_Helper"
+              "api-reference/frontend-state-management/redux-store-configuration",
+              "api-reference/frontend-state-management/authentication-state",
+              "api-reference/frontend-state-management/common-state",
+              "api-reference/frontend-state-management/database-state",
+              "api-reference/frontend-state-management/global-state",
+              "api-reference/frontend-state-management/settings-state",
+              "api-reference/frontend-state-management/chat-state",
+              "api-reference/frontend-state-management/typed-react-redux-hooks",
+              "api-reference/frontend-state-management/notification-helper"
             ]
           }
         ]
@@ -105,40 +105,40 @@
           {
             "group": "Core UI Components",
             "pages": [
-              "Frontend_UI_Components/Core_UI_Components/Buttons",
-              "Frontend_UI_Components/Core_UI_Components/Inputs",
-              "Frontend_UI_Components/Core_UI_Components/Dropdowns",
-              "Frontend_UI_Components/Core_UI_Components/Cards",
-              "Frontend_UI_Components/Core_UI_Components/Tables",
-              "Frontend_UI_Components/Core_UI_Components/Loading_Indicators",
-              "Frontend_UI_Components/Core_UI_Components/Notifications",
-              "Frontend_UI_Components/Core_UI_Components/Common_UI"
+              "frontend-ui-components/core-ui-components/buttons",
+              "frontend-ui-components/core-ui-components/inputs",
+              "frontend-ui-components/core-ui-components/dropdowns",
+              "frontend-ui-components/core-ui-components/cards",
+              "frontend-ui-components/core-ui-components/tables",
+              "frontend-ui-components/core-ui-components/loading-indicators",
+              "frontend-ui-components/core-ui-components/notifications",
+              "frontend-ui-components/core-ui-components/common-ui"
             ]
           },
           {
             "group": "Advanced UI Components & Utilities",
             "pages": [
-              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Code_Editor",
-              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Graph_Components",
-              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Search_Input",
-              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Sidebar_Navigation",
-              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Custom_React_Hooks",
-              "Frontend_UI_Components/Advanced_UI_Components_&_Utilities/Utility_Functions"
+              "frontend-ui-components/advanced-ui-components-and-utilities/code-editor",
+              "frontend-ui-components/advanced-ui-components-and-utilities/graph-components",
+              "frontend-ui-components/advanced-ui-components-and-utilities/search-input",
+              "frontend-ui-components/advanced-ui-components-and-utilities/sidebar-navigation",
+              "frontend-ui-components/advanced-ui-components-and-utilities/custom-react-hooks",
+              "frontend-ui-components/advanced-ui-components-and-utilities/utility-functions"
             ]
           },
           {
             "group": "Frontend Pages",
             "pages": [
-              "Frontend_UI_Components/Frontend_Pages/Login_Page",
-              "Frontend_UI_Components/Frontend_Pages/Logout_Page",
-              "Frontend_UI_Components/Frontend_Pages/Chat_Page",
-              "Frontend_UI_Components/Frontend_Pages/Default_Chat_Route",
-              "Frontend_UI_Components/Frontend_Pages/Storage_Unit_Exploration_Page",
-              "Frontend_UI_Components/Frontend_Pages/Storage_Unit_Management",
-              "Frontend_UI_Components/Frontend_Pages/Raw_Execute_Page",
-              "Frontend_UI_Components/Frontend_Pages/Settings_Page",
-              "Frontend_UI_Components/Frontend_Pages/Contact_Us_Page",
-              "Frontend_UI_Components/Frontend_Pages/Graph_Visualization_Page"
+              "frontend-ui-components/frontend-pages/login-page",
+              "frontend-ui-components/frontend-pages/logout-page",
+              "frontend-ui-components/frontend-pages/chat-page",
+              "frontend-ui-components/frontend-pages/default-chat-route",
+              "frontend-ui-components/frontend-pages/storage-unit-exploration-page",
+              "frontend-ui-components/frontend-pages/storage-unit-management",
+              "frontend-ui-components/frontend-pages/raw-execute-page",
+              "frontend-ui-components/frontend-pages/settings-page",
+              "frontend-ui-components/frontend-pages/contact-us-page",
+              "frontend-ui-components/frontend-pages/graph-visualization-page"
             ]
           }
         ]
